@@ -11,12 +11,12 @@ import cv2
 import albumentations as A
 
 # Directory of images to process -- set to VisDrone validation dataset by default
-#read_directory = 'VisDrone2019-DET-val'
-read_directory = 'testing'
+read_directory = 'VisDrone2019-DET-val'
+#read_directory = 'testing'    # this line for testing purposes only
 
 # Create a new directory to store augmented images
 # Will be created inside the current directory unless otherwise specified
-write_directory = 'Visdrone-Robust-set'
+write_directory = 'VisDrone-Robust-set'
 os.mkdir(write_directory)
 
 # read and augment every image in the given directory and write to output directory
