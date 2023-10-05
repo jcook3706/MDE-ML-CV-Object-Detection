@@ -2,7 +2,7 @@
 # Filename: tiling.py
 # Author: Hayley Wisman
 # Date Created: 04/06/2023
-# Last Modified: 09/21/2023
+# Last Modified: 10/05/2023
 # Description: Performs tiling on an image as a preprocessing step prior to object detection
 #############################################################################################
 
@@ -20,6 +20,7 @@ def tiling(img):
     x_tiles = 4  # number of tiles in x-direction
     y_tiles = 4  # number of tiles in y-direction
     resize_factor = 2  # factor by which image tile will be upsized in x and y directions
+    percent_overlap = 0.2  # percent of each tile overlapping adjacent tiles in both x- and y- directions
     # set variables here to specify tile size instead of # tiles
 
     ####################################################
@@ -43,14 +44,24 @@ def tiling(img):
     resize_dim = (resize_factor * ytile_pixels, resize_factor * xtile_pixels)  # resized tile dimensions
     tiles = []  # stores tiles after they have been resized
 
-    # store tiles in an array
+    # divide and store tiles in an array
     for i in range(x_tiles):
-        startx = i * xtile_pixels
-        endx = (i + 1) * xtile_pixels
+        # compute overlap between non-border tiles
+        if (i > 0 and i < x_tiles):
+            startx = (i * xtile_pixels) - int(percent_overlap * xtile_pixels)    # overlap with tiles to left/right
+            endx = ((i + 1) * xtile_pixels) + int(percent_overlap * xtile_pixels)
+        else:
+            startx = i * xtile_pixels
+            endx = (i + 1) * xtile_pixels
 
         for j in range(y_tiles):
-            starty = j * ytile_pixels
-            endy = (j + 1) * ytile_pixels
+            if (j > 0 and j < y_tiles):
+                starty = (j * ytile_pixels) - int(percent_overlap * ytile_pixels)   # overlap with tiles above/below
+                endy = ((j + 1) * ytile_pixels) + int(percent_overlap * ytile_pixels)
+            else:
+                starty = j * ytile_pixels
+                endy = (j + 1) * ytile_pixels
+
             tile = cv2.resize(img[startx:endx, starty:endy], resize_dim, interpolation=cv2.INTER_CUBIC)
             tiles.append(tile)
 
