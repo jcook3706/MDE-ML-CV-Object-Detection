@@ -1,0 +1,1 @@
+The calculations folder is taken and adapted from https://github.com/Cartucho/mAP

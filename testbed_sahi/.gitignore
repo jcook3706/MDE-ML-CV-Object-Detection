@@ -1,0 +1,4 @@
+runs/*
+calculations/input/detection-results/*
+calculations/input/ground-truth/*
+calculations/output/*
