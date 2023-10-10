@@ -4,7 +4,7 @@ It makes inferences on a specified directory of images and calcuates mAP based o
 See README for instructions on how to run
 
 example usage
-python run_testbed.py --run_nickname testrun --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml
+python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --use_sahi --conf 0.01 --run_nickname testrun --skip_ground_truth
 '''
 import argparse
 
@@ -13,6 +13,9 @@ parser = argparse.ArgumentParser(description='This script tests a yolo model wit
 parser.add_argument('--model_path', type=str, required=True, help='Path to the .pt YOLO model')
 parser.add_argument('--run_nickname', type=str, required=True, help='User defined name - will be used for log file name')
 parser.add_argument('--dataset_path', type=str, required=True, help='Path to .yaml file that describes the dataset')
+parser.add_argument('--skip_ground_truth', action='store_true', required=False, help='Skip converting ground truth if its already done')
+parser.add_argument('--use_sahi', action='store_true', required=False, help='Use SAHI')
+parser.add_argument('--conf', type=float, default=0.5, help='Confidence threshold (default: 0.5)')
 args = parser.parse_args()
 
 print("Setting up test...")
@@ -67,13 +70,14 @@ if not os.path.exists(calculation_ground_truth_path):
 ##########################################################################################
 # Ground truth conversion
 ##########################################################################################
-# move labels into calculations
-shutil.rmtree(calculation_ground_truth_path)
-shutil.copytree(dataset_labels_dir_path, calculation_ground_truth_path)
+if not args.skip_ground_truth:
+    # move labels into calculations
+    shutil.rmtree(calculation_ground_truth_path)
+    shutil.copytree(dataset_labels_dir_path, calculation_ground_truth_path)
 
-# convert labels from the dataset into the correct format for the testbed to read
-print("Converting ground-truth labels to correct format...")
-subprocess.run(["python", "calculations/scripts/extra/convert_gt_yolo.py", "--images_path", dataset_images_dir_path], check=True)
+    # convert labels from the dataset into the correct format for the testbed to read
+    print("Converting ground-truth labels to correct format...")
+    subprocess.run(["python", "calculations/scripts/extra/convert_gt_yolo.py", "--images_path", dataset_images_dir_path], check=True)
 
 ##########################################################################################
 # Model inferencing
@@ -81,12 +85,10 @@ subprocess.run(["python", "calculations/scripts/extra/convert_gt_yolo.py", "--im
 # run the model's inferencing on each image from the dir specified in the dataset.yaml
 # optionally use SAHI
 print("Running Inferencing on images with the Model...")
-
 # configs
 output_dir = run_dir
-# TODO get from arg
-confidence_threshold=0.001
-use_sahi = False
+use_sahi = args.use_sahi # optionally use SAHI
+confidence_threshold= args.conf # confidence threshold
 
 # run
 result = sahi.predict.predict(
