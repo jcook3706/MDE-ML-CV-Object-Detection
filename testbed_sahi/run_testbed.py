@@ -11,12 +11,32 @@ import argparse
 # Get arguments from the command line
 parser = argparse.ArgumentParser(description='This script tests a yolo model with an option of using SAHI or not')
 parser.add_argument('--model_path', type=str, required=True, help='Path to the .pt YOLO model')
+parser.add_argument('--model_size', type=str, required=True, help='Size of the yolo model being used. Saved to output')
 parser.add_argument('--run_nickname', type=str, required=True, help='User defined name - will be used for log file name')
 parser.add_argument('--dataset_path', type=str, required=True, help='Path to .yaml file that describes the dataset')
 parser.add_argument('--skip_ground_truth', action='store_true', required=False, help='Skip converting ground truth if its already done')
 parser.add_argument('--use_sahi', action='store_true', required=False, help='Use SAHI')
 parser.add_argument('--conf', type=float, default=0.5, help='Confidence threshold (default: 0.5)')
 args = parser.parse_args()
+
+##########################################################################################
+# Configurations: CHANGE THESE TO AFFECT SAHI RUN
+##########################################################################################
+configurations = {
+    "sahi": args.use_sahi,
+    "conf_threshold": args.conf,
+    
+    # Currently hardcoded configurations. Change these to affect model
+    "sahi_configurations": {
+        "slice_height" : 256, 
+        "slice_width" : 256,
+        "overlap_height_ratio": 0.2,
+        "overlap_width_ratio" : 0.2,
+        "postprocess_class_agnostic" : True
+
+        # TODO: can add more sahi configurations that we find out affect the results
+    }
+}
 
 print("Setting up test...")
 import os
@@ -26,6 +46,8 @@ import subprocess
 import sahi.predict
 import glob
 import pickle
+import re
+import json
 
 ##########################################################################################
 # Usage Verification
@@ -87,8 +109,9 @@ if not args.skip_ground_truth:
 print("Running Inferencing on images with the Model...")
 # configs
 output_dir = run_dir
-use_sahi = args.use_sahi # optionally use SAHI
-confidence_threshold= args.conf # confidence threshold
+use_sahi = configurations["sahi"] # optionally use SAHI
+confidence_threshold= configurations["conf_threshold"] # confidence threshold
+sahi_configs = configurations["sahi_configurations"]
 
 # run
 result = sahi.predict.predict(
@@ -110,11 +133,11 @@ result = sahi.predict.predict(
     no_sliced_prediction=not use_sahi,
 
     # SAHI parameters that may affect results - not exhaustive
-    slice_height = 256, 
-    slice_width = 256,
-    overlap_height_ratio= 0.2,
-    overlap_width_ratio = 0.2,
-    postprocess_class_agnostic = True
+    slice_height = sahi_configs["slice_height"], 
+    slice_width = sahi_configs["slice_width"],
+    overlap_height_ratio = sahi_configs["overlap_height_ratio"],
+    overlap_width_ratio = sahi_configs["overlap_width_ratio"],
+    postprocess_class_agnostic = sahi_configs["postprocess_class_agnostic"]
 )
 print("Finished making predictions!")
 
@@ -153,8 +176,48 @@ print('Finished extracting results!')
 ##########################################################################################
 print('Calculating mAP...')
 # calculate mAP and inform user
-command = f"python calculations/main.py 2>&1 | tee {run_dir}/map.log"
+output_log_path = f"{run_dir}/map.log"
+command = f"python calculations/main.py 2>&1 | tee {output_log_path}"
 subprocess.run(command, shell=True, check=True)
+
+output_json_path = f"{run_dir}/output.json"
+print(f'Finished Calculations. Saving output summary to {output_json_path}')
+
+##########################################################################################
+# Saving summary json
+##########################################################################################
+
+# Regular expression pattern to match lines in the log file
+pattern = r"([\d.]+)% = (.+) AP"
+
+class_specific_ap = {}
+mAP = None
+
+# Read and parse log file for AP and mAP
+with open(output_log_path, 'r') as log_file:
+    for line in log_file:
+        match = re.match(pattern, line)
+        if match:
+            percentage, label = match.groups()
+            class_specific_ap[label.strip()] = float(percentage)
+        elif line.startswith("mAP"):
+            mAP = float(re.search(r"([\d.]+)%", line).group(1))
+
+# Create the final dictionary with mAP and class-specific AP
+output_data = {
+    "run_name": args.run_nickname,
+    "model_path": args.model_path,
+    "model_size": args.model_size,
+    "configurations" : configurations,
+    "mAP": mAP,
+    "class_specific_AP": class_specific_ap
+}
+
+# Save the results as JSON
+with open(output_json_path, 'w') as output_file:
+    json.dump(output_data, output_file, indent=4)
+
+print(f"Summary has been saved to {output_json_path}.")
 print('Done.')
 
 # TODO: clean up
