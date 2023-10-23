@@ -29,15 +29,23 @@ Required arguments:
 - `--run_nickname`: The name of the folder to write results to.
 
 Optional arguments:
-- `--use_sahi`: If present, SAHI is run on top of the yolo model. As of now, SAHI configurations are handled in the code.
+- `--use_sahi`: If present, SAHI is run on top of the yolo model.
 - `--skip_ground_truth`: If present, skips converting ground truth labels to correct format (can be used after first run)
 - `--conf`: A float that represents the minimum confidence threshold for the model (default 0.5)
+- `--postprocess_type`: The postprocessing type to use. (default GREEDYNMM. Can also be NMM or NMS)
+- `--postprocess_match_metric`: The postprocessing match metric to use. (default IOS. Can also be IOU)
+- `--postprocess_match_threshold`: The postprocessing match threshold to use. (default 0.5)
+- `--slice_height_and_width`: Slice size to use. (default 256)
+- `--overlap_height_and_width_ratio`: Overlap ratio for slices. (default 0.2)
 
-### Example usage
+### Example usages
 `python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --use_sahi --conf 0.01 --run_nickname testrun --skip_ground_truth`
+
+`python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --model_size=large --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --conf 0.001 --use_sahi --run_nickname myBestConfig-lrg-s700-NMS-iou --skip_ground_truth --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 700`
 
 ## Output:
 Results will be saved to `testbed_sahi/runs/{run_nickname}` including:
+- `output.json`: All stats about the run including mAP and all configurations.
 - `map.log`: The mAP calculation results.
 - `exp/visuals`: Visual results of the predictions on each image.
 

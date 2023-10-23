@@ -19,11 +19,11 @@ parser.add_argument('--use_sahi', action='store_true', required=False, help='Use
 parser.add_argument('--conf', type=float, default=0.5, help='Confidence threshold (default: 0.5)')
 
 # SAHI configurations (optional)
-parser.add_argument('--postprocess_type', type=str, required=False, default="GREEDYNMM", help='postprocess_type')
-parser.add_argument('--postprocess_match_metric', type=str, required=False, default="IOS", help='postprocess_match_metric')
-parser.add_argument('--postprocess_match_threshold', type=float, required=False, default=0.5, help='postprocess_match_threshold')
-parser.add_argument('--slice_height_and_width', type=int, required=False, default=256, help='slice_height_and_width')
-parser.add_argument('--overlap_height_and_width_ratio', type=float, required=False, default=0.2, help='overlap_height_and_width_ratio')
+parser.add_argument('--postprocess_type', type=str, required=False, default="GREEDYNMM", help='The postprocessing type to use. (default GREEDYNMM. Can also be NMM or NMS)')
+parser.add_argument('--postprocess_match_metric', type=str, required=False, default="IOS", help='The postprocessing match metric to use. (default IOS. Can also be IOU)')
+parser.add_argument('--postprocess_match_threshold', type=float, required=False, default=0.5, help='The postprocessing match threshold to use. (default 0.5)')
+parser.add_argument('--slice_height_and_width', type=int, required=False, default=256, help='Slice size to use. (default 256)')
+parser.add_argument('--overlap_height_and_width_ratio', type=float, required=False, default=0.2, help='Overlap ratio for slices. (default 0.2)')
 
 args = parser.parse_args()
 
