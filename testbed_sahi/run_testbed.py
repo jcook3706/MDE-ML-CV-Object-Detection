@@ -3,8 +3,8 @@ This script tests a yolo model with an option of using SAHI or not.
 It makes inferences on a specified directory of images and calcuates mAP based on comparing predictions to ground-truth.
 See README for instructions on how to run
 
-example usage
-python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --use_sahi --conf 0.01 --run_nickname testrun --skip_ground_truth
+example usage: 
+python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --model_size=large --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --conf 0.001 --use_sahi --run_nickname myBestConfig-lrg-s700-NMS-iou --skip_ground_truth --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 700
 '''
 import argparse
 
@@ -17,6 +17,14 @@ parser.add_argument('--dataset_path', type=str, required=True, help='Path to .ya
 parser.add_argument('--skip_ground_truth', action='store_true', required=False, help='Skip converting ground truth if its already done')
 parser.add_argument('--use_sahi', action='store_true', required=False, help='Use SAHI')
 parser.add_argument('--conf', type=float, default=0.5, help='Confidence threshold (default: 0.5)')
+
+# SAHI configurations (optional)
+parser.add_argument('--postprocess_type', type=str, required=False, default="GREEDYNMM", help='postprocess_type')
+parser.add_argument('--postprocess_match_metric', type=str, required=False, default="IOS", help='postprocess_match_metric')
+parser.add_argument('--postprocess_match_threshold', type=float, required=False, default=0.5, help='postprocess_match_threshold')
+parser.add_argument('--slice_height_and_width', type=int, required=False, default=256, help='slice_height_and_width')
+parser.add_argument('--overlap_height_and_width_ratio', type=float, required=False, default=0.2, help='overlap_height_and_width_ratio')
+
 args = parser.parse_args()
 
 ##########################################################################################
@@ -26,15 +34,17 @@ configurations = {
     "sahi": args.use_sahi,
     "conf_threshold": args.conf,
     
-    # Currently hardcoded configurations. Change these to affect model
+    # Configurations that apply only if SAHI is being used
     "sahi_configurations": {
-        "slice_height" : 256, 
-        "slice_width" : 256,
-        "overlap_height_ratio": 0.2,
-        "overlap_width_ratio" : 0.2,
-        "postprocess_class_agnostic" : True
+        "slice_height" : args.slice_height_and_width, 
+        "slice_width" : args.slice_height_and_width,
 
-        # TODO: can add more sahi configurations that we find out affect the results
+        "overlap_height_ratio": args.overlap_height_and_width_ratio,
+        "overlap_width_ratio" : args.overlap_height_and_width_ratio,
+
+        "postprocess_type": args.postprocess_type,
+        "postprocess_match_metric": args.postprocess_match_metric,
+        "postprocess_match_threshold": args.postprocess_match_threshold
     }
 }
 
@@ -48,6 +58,7 @@ import glob
 import pickle
 import re
 import json
+import datetime
 
 ##########################################################################################
 # Usage Verification
@@ -137,7 +148,11 @@ result = sahi.predict.predict(
     slice_width = sahi_configs["slice_width"],
     overlap_height_ratio = sahi_configs["overlap_height_ratio"],
     overlap_width_ratio = sahi_configs["overlap_width_ratio"],
-    postprocess_class_agnostic = sahi_configs["postprocess_class_agnostic"]
+
+    postprocess_type=sahi_configs["postprocess_type"],
+    postprocess_match_metric=sahi_configs["postprocess_match_metric"],
+    postprocess_match_threshold=sahi_configs["postprocess_match_threshold"],
+    force_postprocess_type=True # need this to allow postprocess type to be changed
 )
 print("Finished making predictions!")
 
@@ -206,6 +221,7 @@ with open(output_log_path, 'r') as log_file:
 # Create the final dictionary with mAP and class-specific AP
 output_data = {
     "run_name": args.run_nickname,
+    "date": datetime.datetime.now().isoformat(),
     "model_path": args.model_path,
     "model_size": args.model_size,
     "configurations" : configurations,
@@ -219,5 +235,3 @@ with open(output_json_path, 'w') as output_file:
 
 print(f"Summary has been saved to {output_json_path}.")
 print('Done.')
-
-# TODO: clean up
