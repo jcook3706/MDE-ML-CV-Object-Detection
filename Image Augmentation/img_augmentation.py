@@ -12,31 +12,61 @@ import albumentations as A
 import shutil
 
 # Directory of images to process -- set to VisDrone validation dataset by default
-read_directory = 'visdrone-images'
-#read_directory = 'testing'    # this line for testing purposes only
+image_read_directory = 'visdrone-images'
+annotation_read_directory = 'visdrone-annotations'
 
-# Create a new directory to store augmented images
+# Create a new directory to store augmented images and annotations
 # Will be created inside the current directory unless otherwise specified
-single_transformation_write_directory = 'single-transformation-directory'
-conglomerate_transformation_write_directory = 'conglomerate-transformation-directory'
+image_write_directory = 'image-transformation-directory'
+annotation_write_directory = 'annotation-transformation-directory'
 
-if(os.path.exists(single_transformation_write_directory)):
-    shutil.rmtree(single_transformation_write_directory)
-if(os.path.exists(conglomerate_transformation_write_directory)):
-    shutil.rmtree(conglomerate_transformation_write_directory)
-os.mkdir(single_transformation_write_directory)
-os.mkdir(conglomerate_transformation_write_directory)
+numTotalTransformImages = 5
+copyNonAugmentedImages = True
+
+if(os.path.exists(image_write_directory)):
+    shutil.rmtree(image_write_directory)
+if(os.path.exists(annotation_write_directory)):
+    shutil.rmtree(annotation_write_directory)
+os.mkdir(image_write_directory)
+os.mkdir(annotation_write_directory)
+
+if copyNonAugmentedImages:
+    for filename in os.listdir(image_read_directory):
+        f = os.path.join(image_read_directory, filename)
+        image_read_file = os.path.join(image_read_directory, filename)
+        image_save_file = os.path.join(image_write_directory, filename)
+        image_file_base = os.path.splitext(image_save_file)[0]
+        image_file_ext = os.path.splitext(image_save_file)[1]
+        destination = image_file_base + 'nonaugmented' + image_file_ext
+        shutil.copy(image_read_file, destination)
+
+for filename in os.listdir(annotation_read_directory):
+    annotation_read_file = os.path.join(annotation_read_directory, filename)
+    annotation_save_file = os.path.join(annotation_write_directory, filename)
+    annotation_file_base = os.path.splitext(annotation_save_file)[0]
+    annotation_file_ext = os.path.splitext(annotation_save_file)[1]
+    for i in range(numTotalTransformImages):
+        shutil.copy(annotation_read_file, annotation_file_base + 'augmented' + str(i) + annotation_file_ext)
 
 # read and augment every image in the given directory and write to output directory
-for filename in os.listdir(read_directory):
-    f = os.path.join(read_directory, filename)
-    single_save_file = os.path.join(single_transformation_write_directory, filename)
-    single_file_base = os.path.splitext(single_save_file)[0]
-    single_file_ext = os.path.splitext(single_save_file)[1]
+for filename in os.listdir(image_read_directory):
+    f = os.path.join(image_read_directory, filename)
+    image_save_file = os.path.join(image_write_directory, filename)
+    image_file_base = os.path.splitext(image_save_file)[0]
+    image_file_ext = os.path.splitext(image_save_file)[1]
 
-    conglomerate_save_file = os.path.join(conglomerate_transformation_write_directory, filename)
-    conglomerate_file_base = os.path.splitext(conglomerate_save_file)[0]
-    conglomerate_file_ext = os.path.splitext(conglomerate_save_file)[1]
+    print(image_save_file)
+    print(image_file_base)
+    print(image_file_ext)
+
+    annotation_save_file = os.path.join(annotation_write_directory, filename)
+    annotation_file_base = os.path.splitext(annotation_save_file)[0]
+    annotation_file_ext = '.txt'
+    annotation_save_file = annotation_file_base + annotation_file_ext
+
+    print(annotation_save_file)
+    print(annotation_file_base)
+    print(annotation_file_ext)
 
     if os.path.isfile(f):
         img = cv2.imread(f)
@@ -53,19 +83,20 @@ for filename in os.listdir(read_directory):
         transform_list = [motionblur, rain, fog, defocus, spatter_rain, spatter_mud, gaussian_noise]
 
         totalTransform = A.Compose([
-            A.MotionBlur(p=0.5, blur_limit=35),
-            A.RandomRain(p=0.5),
-            A.RandomFog(p=0.5, fog_coef_lower=0.1, fog_coef_upper=0.3, alpha_coef=0.1),
-            A.Defocus(p=0.5),
-            A.Spatter(p=0.5, mean=0.65, std=0.3, gauss_sigma=2, intensity=0.6, mode='mud'),
-            A.Spatter(p=0.5, mean=0.65, std=0.3, gauss_sigma=2, intensity=0.6)
+            A.MotionBlur(p=0.25, blur_limit=25),
+            A.RandomRain(p=0.25),
+            A.RandomFog(p=0.25, fog_coef_lower=0.1, fog_coef_upper=0.3, alpha_coef=0.1),
+            A.Defocus(p=0.25),
+            A.Spatter(p=0.25, mean=0.65, std=0.3, gauss_sigma=2, intensity=0.6, mode='mud'),
+            A.Spatter(p=0.25, mean=0.65, std=0.3, gauss_sigma=2, intensity=0.6)
         ])
 
         # OpenCV uses BGR color scheme -- convert to RGB for processing with Albumentations
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         i = 0  # concatenate with image file name to avoid overwriting the same image
 
-        # apply each transform to the image
+        # apply each single transform to the image
+        """
         for transform in transform_list:
             trans_img = transform(image=rgb_img)['image']
             # convert back to BGR to write image using OpenCV function
@@ -88,11 +119,13 @@ for filename in os.listdir(read_directory):
                 label = ''
             cv2.imwrite(single_file_base + '_' + label + '_' + single_file_ext, trans_img)
             i += 1
-
+        """
         k=0
-        numTotalTransformImages = 5
         for i in range(numTotalTransformImages):
             trans_img = totalTransform(image=rgb_img)['image']
             trans_img = cv2.cvtColor(trans_img, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(conglomerate_file_base + 'total' + str(k) + conglomerate_file_ext, trans_img)
+            cv2.imwrite(image_file_base + 'augmented' + str(k) + image_file_ext, trans_img)
             k += 1
+        # print()
+        # for i in range(numTotalTransformImages):
+        #     shutil.copy(annotation_save_file, )
