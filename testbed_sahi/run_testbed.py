@@ -4,7 +4,7 @@ It makes inferences on a specified directory of images and calcuates mAP based o
 See README for instructions on how to run
 
 example usage: 
-python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --model_size=large --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --conf 0.001 --use_sahi --run_nickname myBestConfig-lrg-s700-NMS-iou --skip_ground_truth --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 700
+python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --model_size=large --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --dataset_partition val --conf 0.001 --use_sahi --run_nickname myBestConfig-lrg-s700-NMS-iou --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 700
 '''
 import argparse
 
@@ -14,9 +14,12 @@ parser.add_argument('--model_path', type=str, required=True, help='Path to the .
 parser.add_argument('--model_size', type=str, required=True, help='Size of the yolo model being used. Saved to output')
 parser.add_argument('--run_nickname', type=str, required=True, help='User defined name - will be used for log file name')
 parser.add_argument('--dataset_path', type=str, required=True, help='Path to .yaml file that describes the dataset')
-parser.add_argument('--skip_ground_truth', action='store_true', required=False, help='Skip converting ground truth if its already done')
+parser.add_argument('--skip_ground_truth', action='store_true', required=False, help='Skip converting ground truth if its already done. Note: Do not do this if switching dataset partition')
 parser.add_argument('--use_sahi', action='store_true', required=False, help='Use SAHI')
 parser.add_argument('--conf', type=float, default=0.5, help='Confidence threshold (default: 0.5)')
+
+# which set to use
+parser.add_argument('--dataset_partition', type=str, required=False, default='val', help='Partition of dataset to use: val or test')
 
 # SAHI configurations (optional)
 parser.add_argument('--postprocess_type', type=str, required=False, default="GREEDYNMM", help='The postprocessing type to use. (default GREEDYNMM. Can also be NMM or NMS)')
@@ -80,19 +83,24 @@ if os.path.exists(run_dir):
     print(f"The run directory '{run_dir}' already exists. Please choose a different name.")
     exit()
 
+# check partition name
+if args.dataset_partition not in ['val', 'test']:
+    print(f"Invalid dataset partition name [{args.dataset_partition}]")
+    exit()
+
 # get info from YAML and verify
 with open(args.dataset_path, 'r') as yaml_file:
     dataset_yaml_data = yaml.safe_load(yaml_file)
-val_path = dataset_yaml_data['val']
+partition_path = dataset_yaml_data[args.dataset_partition]
 names = dataset_yaml_data['names']
 
-dataset_images_dir_path = os.path.join(val_path, 'images')
-dataset_labels_dir_path = os.path.join(val_path, 'labels')
+dataset_images_dir_path = os.path.join(partition_path, 'images')
+dataset_labels_dir_path = os.path.join(partition_path, 'labels')
 if not os.path.exists(dataset_images_dir_path):
-    print(f"Couldn't find Validtion path [{os.path.join(val_path, 'images')}] found in given dataset file [{args.dataset_path}].")
+    print(f"Couldn't find {args.dataset_partition} path [{os.path.join(partition_path, 'images')}] found in given dataset file [{args.dataset_path}].")
     exit()
 if not os.path.exists(dataset_labels_dir_path):
-    print(f"Couldn't find Validtion path [{os.path.join(val_path, 'labels')}] found in given dataset file [{args.dataset_path}].")
+    print(f"Couldn't find {args.dataset_partition} path [{os.path.join(partition_path, 'labels')}] found in given dataset file [{args.dataset_path}].")
     exit()
 
 calculation_ground_truth_path = "./calculations/input/ground-truth"
@@ -222,6 +230,8 @@ with open(output_log_path, 'r') as log_file:
 output_data = {
     "run_name": args.run_nickname,
     "date": datetime.datetime.now().isoformat(),
+    "dataset_path": args.dataset_path,
+    "dataset_partition": args.dataset_partition,
     "model_path": args.model_path,
     "model_size": args.model_size,
     "configurations" : configurations,
