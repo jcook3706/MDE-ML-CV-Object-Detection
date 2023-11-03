@@ -47,6 +47,8 @@ for filename in os.listdir(annotation_read_directory):
     annotation_file_ext = os.path.splitext(annotation_save_file)[1]
     for i in range(numTotalTransformImages):
         shutil.copy(annotation_read_file, annotation_file_base + 'augmented' + str(i) + annotation_file_ext)
+    if(copyNonAugmentedImages):
+        shutil.copy(annotation_read_file, annotation_file_base + 'nonaugmented' + annotation_file_ext)
 
 # read and augment every image in the given directory and write to output directory
 for filename in os.listdir(image_read_directory):
