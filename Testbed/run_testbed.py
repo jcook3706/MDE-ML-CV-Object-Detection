@@ -11,7 +11,7 @@ import argparse
 # Get arguments from the command line
 parser = argparse.ArgumentParser(description='This script tests a yolo model with an option of using SAHI or not')
 parser.add_argument('--model_path', type=str, required=True, help='Path to the .pt YOLO model')
-parser.add_argument('--model_size', type=str, required=True, help='Size of the yolo model being used. Saved to output')
+parser.add_argument('--model_size', type=str, required=False, default="Unspecified, see model name", help='Size of the yolo model being used. Saved to output')
 parser.add_argument('--run_nickname', type=str, required=True, help='User defined name - will be used for log file name')
 parser.add_argument('--dataset_path', type=str, required=True, help='Path to .yaml file that describes the dataset')
 parser.add_argument('--skip_ground_truth', action='store_true', required=False, help='Skip converting ground truth if its already done. Note: Do not do this if switching dataset partition')
