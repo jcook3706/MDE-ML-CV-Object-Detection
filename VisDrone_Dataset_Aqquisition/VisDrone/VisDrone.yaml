@@ -1,0 +1,18 @@
+# these paths may need to be changed according to your directory structure
+train: VisDrone2019-DET-train
+val: VisDrone2019-DET-val
+test: VisDrone2019-DET-test-dev
+
+
+# Classes
+names:
+  0: pedestrian
+  1: people
+  2: bicycle
+  3: car
+  4: van
+  5: truck
+  6: tricycle
+  7: awning-tricycle
+  8: bus
+  9: motor
