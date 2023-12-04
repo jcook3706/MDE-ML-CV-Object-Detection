@@ -5,6 +5,10 @@ See README for instructions on how to run
 
 example usage: 
 python run_testbed.py --model_path /home/mdkattwinkel/mde/yolov8l_trained_9_15_23.pt --model_size=large --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --dataset_partition val --conf 0.001 --use_sahi --run_nickname myBestConfig-lrg-s700-NMS-iou --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 700
+
+python run_testbed.py --model_path ../Trained_models/yolov8l_trained_on_tiled_640_set.pt --dataset_path ../VisDrone_Dataset_Aqquisition/VisDrone/VisDrone.yaml --conf 0.5 --use_sahi --run_nickname tilingAndSAHI0.5 --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 640
+
+python run_testbed.py --model_path ../Trained_models/yolov8l_trained_on_tiled_640_set.pt --dataset_path ../VisDrone_Dataset_Aqquisition/VisDrone/VisDrone.yaml --conf 0.001 --use_sahi --run_nickname tilingAndSAHI0.001 --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 640 --dataset_partition test
 '''
 import argparse
 
@@ -91,7 +95,7 @@ if args.dataset_partition not in ['val', 'test']:
 # get info from YAML and verify
 with open(args.dataset_path, 'r') as yaml_file:
     dataset_yaml_data = yaml.safe_load(yaml_file)
-partition_path = dataset_yaml_data[args.dataset_partition]
+partition_path = os.path.expanduser(dataset_yaml_data[args.dataset_partition])
 names = dataset_yaml_data['names']
 
 dataset_images_dir_path = os.path.join(partition_path, 'images')

@@ -6,3 +6,5 @@ VisDrone/VisDrone2019-DET-train/labels/*
 
 VisDrone/VisDrone2019-DET-val/images/*
 VisDrone/VisDrone2019-DET-val/labels/*
+
+zip_files/*

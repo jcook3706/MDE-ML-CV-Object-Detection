@@ -42,9 +42,9 @@ Optional arguments:
 - `--model_size`: Size of the yolo model being used. Has no effect except it is saved to output. 
 
 ### Example usages
-`python run_testbed.py --model_path ./yolov8l_trained_9_15_23.pt --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --use_sahi --conf 0.01 --run_nickname testrun --skip_ground_truth`
+`python run_testbed.py --model_path ../Trained_models/yolov8l_trained_on_tiled_640_set.pt --dataset_path ../VisDrone_Dataset_Aqquisition/VisDrone/VisDrone.yaml --conf 0.5 --use_sahi --run_nickname tilingAndSAHI0.5 --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 640` (faster run)
 
-`python run_testbed.py --model_path ./yolov8l_trained_9_15_23.pt --model_size=large --dataset_path /home/mdkattwinkel/mde/VisDrone.yaml --conf 0.001 --use_sahi --run_nickname myBestConfig-lrg-s700-NMS-iou --skip_ground_truth --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 700`
+`python run_testbed.py --model_path ../Trained_models/yolov8l_trained_on_tiled_640_set.pt --dataset_path ../VisDrone_Dataset_Aqquisition/VisDrone/VisDrone.yaml --conf 0.001 --use_sahi --run_nickname tilingAndSAHI0.001 --postprocess_type NMS --postprocess_match_metric IOU --slice_height_and_width 640 --dataset_partition test` (benchmarking run)
 
 ## Output:
 Results will be saved to `testbed_sahi/runs/{run_nickname}` including:

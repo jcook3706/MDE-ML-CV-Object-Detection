@@ -1,7 +1,7 @@
 # these paths may need to be changed according to your directory structure
-train: VisDrone2019-DET-train
-val: VisDrone2019-DET-val
-test: VisDrone2019-DET-test-dev
+train: ~/MDE-ML-CV-Object-Detection/VisDrone_Dataset_Aqquisition/VisDrone/VisDrone2019-DET-train
+val: ~/MDE-ML-CV-Object-Detection/VisDrone_Dataset_Aqquisition/VisDrone/VisDrone2019-DET-val
+test: ~/MDE-ML-CV-Object-Detection/VisDrone_Dataset_Aqquisition/VisDrone/VisDrone2019-DET-test-dev
 
 
 # Classes
