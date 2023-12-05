@@ -25,3 +25,7 @@ To train a custom model, follow the directions provided in the YOLOv8_training f
 ## Contributors 
 This project was put together by a team of electrical and computer engineering students at Virginia Tech for their senior design project. 
 Team members: Jimmy Cook, Michael Kattwinkel, Jalen Neal, Chris VanWinkle, Hayley Wisman, and Jay Yim
+
+## Resources
+Project Binder: https://docs.google.com/document/d/1oMWcqyvISd9Y5nBTlSczqY0wimhzZychFPsAsHI0KFw/edit?usp=drive_link
+Presentation: https://docs.google.com/presentation/d/1IdVU__AKyz95JZ-VGZE4nP1aN1ylo5Ol-Smg7x02MBo/edit?usp=drive_link
