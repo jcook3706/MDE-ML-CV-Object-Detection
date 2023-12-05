@@ -28,4 +28,5 @@ Team members: Jimmy Cook, Michael Kattwinkel, Jalen Neal, Chris VanWinkle, Hayle
 
 ## Resources
 Project Binder: https://docs.google.com/document/d/1oMWcqyvISd9Y5nBTlSczqY0wimhzZychFPsAsHI0KFw/edit?usp=drive_link
+
 Presentation: https://docs.google.com/presentation/d/1IdVU__AKyz95JZ-VGZE4nP1aN1ylo5Ol-Smg7x02MBo/edit?usp=drive_link
