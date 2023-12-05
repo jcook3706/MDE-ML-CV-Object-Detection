@@ -97,37 +97,10 @@ for filename in os.listdir(image_read_directory):
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         i = 0  # concatenate with image file name to avoid overwriting the same image
 
-        # apply each single transform to the image
-        """
-        for transform in transform_list:
-            trans_img = transform(image=rgb_img)['image']
-            # convert back to BGR to write image using OpenCV function
-            trans_img = cv2.cvtColor(trans_img, cv2.COLOR_RGB2BGR)
-            if transform == motionblur:
-                label = 'motionblur'
-            elif transform == rain:
-                label = 'rain'
-            elif transform == fog:
-                label = 'fog'
-            elif transform == defocus:
-                label = 'defocus'
-            elif transform == spatter_mud:
-                label = 'spattermud'
-            elif transform ==  spatter_rain:
-                label = 'spatterrain'
-            elif transform == gaussian_noise:
-                label = 'gaussiannoise'
-            else:
-                label = ''
-            cv2.imwrite(single_file_base + '_' + label + '_' + single_file_ext, trans_img)
-            i += 1
-        """
         k=0
         for i in range(numTotalTransformImages):
             trans_img = totalTransform(image=rgb_img)['image']
             trans_img = cv2.cvtColor(trans_img, cv2.COLOR_RGB2BGR)
             cv2.imwrite(image_file_base + 'augmented' + str(k) + image_file_ext, trans_img)
             k += 1
-        # print()
-        # for i in range(numTotalTransformImages):
-        #     shutil.copy(annotation_save_file, )
+
